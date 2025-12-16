@@ -1,0 +1,186 @@
+<resources>
+    <string name="app_name">NexTalk</string>
+    <string name="slogan">Communiquez en toute simplicité</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title_1">Chat Rapide</string>
+    <string name="onboarding_desc_1">Envoyez des messages instantanément à vos amis et famille. Restez connecté où que vous soyez.</string>
+    <string name="onboarding_title_2">Sécurité</string>
+    <string name="onboarding_desc_2">Vos conversations sont protégées. Profitez d\'une messagerie sécurisée et fiable.</string>
+    <string name="onboarding_title_3">Simplicité</string>
+    <string name="onboarding_desc_3">Une interface intuitive et moderne. Commencez à discuter en quelques secondes.</string>
+    <string name="onboarding_image">Image d\'illustration</string>
+    <string name="skip">Passer</string>
+    <string name="next">Suivant</string>
+    <string name="get_started">Commencer</string>
+
+    <!-- Auth -->
+    <string name="login">Connexion</string>
+    <string name="register">Inscription</string>
+    <string name="email">Email</string>
+    <string name="password">Mot de passe</string>
+    <string name="confirm_password">Confirmer le mot de passe</string>
+    <string name="name">Nom complet</string>
+    <string name="birth_date">Date de naissance</string>
+    <string name="forgot_password">Mot de passe oublié ?</string>
+    <string name="no_account">Pas de compte ?</string>
+    <string name="have_account">Déjà un compte ?</string>
+    <string name="reset_password">Réinitialiser</string>
+    <string name="send_reset_email">Envoyer le lien</string>
+    <string name="back_to_login">Retour à la connexion</string>
+    <string name="age_requirement">Vous devez avoir au moins 18 ans</string>
+    <string name="password_mismatch">Les mots de passe ne correspondent pas</string>
+    <string name="invalid_email">Email invalide</string>
+    <string name="password_too_short">Le mot de passe doit contenir au moins 6 caractères</string>
+    <string name="name_required">Le nom est requis</string>
+    <string name="reset_email_sent">Email de réinitialisation envoyé</string>
+    <string name="or">ou</string>
+    <string name="continue_with_google">Continuer avec Google</string>
+    <string name="continue_with_phone">Continuer avec le téléphone</string>
+
+    <!-- Phone Auth -->
+    <string name="phone_login">Connexion par téléphone</string>
+    <string name="phone_login_desc">Entrez votre numéro de téléphone pour recevoir un code de vérification.</string>
+    <string name="phone_number">Numéro de téléphone</string>
+    <string name="send_code">Envoyer le code</string>
+    <string name="enter_code">Entrez le code reçu par SMS</string>
+    <string name="verification_code">Code de vérification</string>
+    <string name="verify">Vérifier</string>
+    <string name="resend_code">Renvoyer le code</string>
+    <string name="code_sent">Code envoyé !</string>
+    <string name="phone_number_required">Numéro de téléphone requis</string>
+    <string name="invalid_code">Code invalide (6 chiffres requis)</string>
+    <string name="phone_updated">Numéro de téléphone mis à jour</string>
+
+    <!-- Home -->
+    <string name="conversations">Conversations</string>
+    <string name="no_conversations">Aucune conversation</string>
+    <string name="start_chatting">Commencez à discuter !</string>
+    <string name="search_hint">Rechercher…</string>
+    <string name="new_chat">Nouveau chat</string>
+
+    <!-- Chat -->
+    <string name="type_message">Écrire un message…</string>
+    <string name="send">Envoyer</string>
+    <string name="online">En ligne</string>
+    <string name="offline">Hors ligne</string>
+    <string name="last_seen">Vu à %s</string>
+    <string name="message_sent">Envoyé</string>
+    <string name="message_received">Reçu</string>
+    <string name="message_seen">Vu</string>
+    <string name="message_status">Statut du message</string>
+    <string name="attach_image">Joindre une image</string>
+    <string name="photo">Photo</string>
+    <string name="typing">En train d\'écrire…</string>
+    <string name="reply_to">Répondre à %s</string>
+    <string name="reply">Répondre</string>
+    <string name="you">Vous</string>
+    <string name="edited">modifié</string>
+    <string name="deleted_message">Ce message a été supprimé</string>
+    <string name="add_reaction">Ajouter une réaction</string>
+    <string name="add_emoji">Ajouter un emoji</string>
+    <string name="voice_message">Message vocal</string>
+    <string name="play_voice_message">Lire le message vocal</string>
+    <string name="pause_voice_message">Mettre en pause</string>
+    <string name="swipe_to_reply">Glisser pour répondre</string>
+    <string name="long_press_options">Appuyez longuement pour plus d\'options</string>
+    <string name="copy">Copier</string>
+    <string name="edit">Modifier</string>
+
+    <!-- Appels -->
+    <string name="voice_call">Appel vocal</string>
+    <string name="video_call">Appel vidéo</string>
+    <string name="incoming_call">Appel entrant</string>
+    <string name="incoming_voice_call">Appel vocal entrant</string>
+    <string name="incoming_video_call">Appel vidéo entrant</string>
+    <string name="calling">Appel en cours…</string>
+    <string name="call_connected">Appel connecté</string>
+    <string name="call_ended">Appel terminé</string>
+    <string name="call_declined">Appel refusé</string>
+    <string name="call_missed">Appel manqué</string>
+    <string name="accept">Accepter</string>
+    <string name="decline">Refuser</string>
+    <string name="end_call">Terminer l\'appel</string>
+    <string name="mute">Muet</string>
+    <string name="unmute">Démuté</string>
+    <string name="speaker">Haut-parleur</string>
+    <string name="camera">Caméra</string>
+    <string name="calls">Appels</string>
+    <string name="all">Tous</string>
+    <string name="missed">Manqués</string>
+    <string name="no_calls">Aucun appel</string>
+    <string name="no_calls_yet">Vous n\'avez pas encore d\'appels</string>
+    <string name="call_type">Type d\'appel</string>
+    <string name="call_status">Statut de l\'appel</string>
+    <string name="phone">Téléphone</string>
+    <string name="incoming">Entrant</string>
+    <string name="outgoing">%s sortant</string>
+    <string name="call_again">Rappeler</string>
+    <string name="yesterday">Hier</string>
+    <string name="call_statistics">Statistiques d\'appels</string>
+    <string name="total_calls">Total d\'appels</string>
+    <string name="total_duration">Durée totale</string>
+    <string name="missed_calls">Appels manqués</string>
+    <string name="duration">Durée</string>
+
+    <!-- Statuts -->
+    <string name="statuses">Statuts</string>
+    <string name="add_status">Ajouter un statut</string>
+    <string name="no_statuses">Aucun statut</string>
+    <string name="no_statuses_yet">Aucun statut pour le moment</string>
+    <string name="create_text_status">Texte</string>
+    <string name="create_photo_status">Photo</string>
+    <string name="create_video_status">Vidéo</string>
+    <string name="text_status_placeholder">Écrivez votre statut...</string>
+    <string name="status_expires_in">Expire dans 24h</string>
+    <string name="views">Vues</string>
+    <string name="view_statuses">Voir les statuts</string>
+    <string name="reply_to_status">Répondre au statut</string>
+    <string name="status_replies">Réponses</string>
+    <string name="your_story">Votre statut</string>
+
+    <!-- Users/Contacts -->
+    <string name="users">Utilisateurs</string>
+    <string name="no_users">Aucun utilisateur trouvé</string>
+    <string name="no_users_found">Aucun utilisateur ne correspond à votre recherche</string>
+    <string name="search_users">Rechercher des utilisateurs…</string>
+    <string name="message">Discuter</string>
+    <string name="tap_user_to_start">Appuyez sur un utilisateur pour commencer une conversation</string>
+    <string name="info">Info</string>
+
+    <!-- Profile -->
+    <string name="profile">Profil</string>
+    <string name="edit_profile">Modifier le profil</string>
+    <string name="settings">Paramètres</string>
+    <string name="notifications">Notifications</string>
+    <string name="dark_mode">Mode sombre</string>
+    <string name="logout">Déconnexion</string>
+    <string name="logout_confirm">Voulez-vous vraiment vous déconnecter ?</string>
+    <string name="cancel">Annuler</string>
+    <string name="confirm">Confirmer</string>
+    <string name="save">Enregistrer</string>
+    <string name="change_photo">Changer la photo</string>
+    <string name="profile_updated">Profil mis à jour</string>
+    <string name="take_photo">Prendre une photo</string>
+    <string name="choose_from_gallery">Choisir depuis la galerie</string>
+    <string name="camera_permission_denied">Permission caméra refusée</string>
+    <string name="not_set">Non défini</string>
+    <string name="change_phone">Changer de numéro</string>
+    <string name="change_phone_desc">Entrez votre nouveau numéro de téléphone. Un code de vérification sera envoyé.</string>
+    <string name="new_phone_number">Nouveau numéro de téléphone</string>
+    <string name="current_phone">Numéro actuel</string>
+    <string name="delete_account">Supprimer le compte</string>
+    <string name="delete_account_confirm">Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.</string>
+    <string name="delete">Supprimer</string>
+    <string name="account_deleted">Compte supprimé</string>
+
+    <!-- Errors -->
+    <string name="error_occurred">Une erreur s\'est produite</string>
+    <string name="no_internet">Pas de connexion internet</string>
+    <string name="try_again">Réessayer</string>
+
+    <!-- Notifications -->
+    <string name="new_message">Nouveau message</string>
+    <string name="notification_channel_name">Messages NexTalk</string>
+    <string name="notification_channel_description">Notifications pour les nouveaux messages</string>
+</resources>

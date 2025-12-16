@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground">
+
+    <!-- Fond dégradé pour appel vidéo -->
+    <View
+        android:id="@+id/backgroundGradient"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Avatar de l'utilisateur (appel vocal) -->
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/ivUserAvatar"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:contentDescription="@string/photo"
+        android:src="@drawable/ic_default_avatar"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/tvUserName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/backgroundGradient"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:visibility="visible" />
+
+    <!-- Nom de l'utilisateur -->
+    <TextView
+        android:id="@+id/tvUserName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ivUserAvatar"
+        tools:text="Jean Dupont" />
+
+    <!-- État de l'appel (Sonnerie, En cours, etc.) -->
+    <TextView
+        android:id="@+id/tvCallStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:alpha="0.8"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvUserName"
+        tools:text="Appel en cours..." />
+
+    <!-- Chronomètre de l'appel -->
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvCallStatus"
+        tools:visibility="visible"
+        tools:text="00:45" />
+
+    <!-- Boutons de contrôle d'appel -->
+    <LinearLayout
+        android:id="@+id/callControlsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="24dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- Bouton Micro (muet/démuté) -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnMuteMic"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/mute"
+            android:src="@drawable/ic_mic"
+            app:backgroundTint="@color/colorPrimary"
+            app:fabSize="mini"
+            app:tint="@android:color/white" />
+
+        <!-- Bouton Haut-parleur -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnSpeaker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/speaker"
+            android:src="@drawable/ic_speaker"
+            app:backgroundTint="@color/colorPrimary"
+            app:fabSize="mini"
+            app:tint="@android:color/white" />
+
+        <!-- Bouton Caméra (vidéo) -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnToggleCamera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/camera"
+            android:src="@drawable/ic_camera"
+            android:visibility="gone"
+            app:backgroundTint="@color/colorPrimary"
+            app:fabSize="mini"
+            app:tint="@android:color/white"
+            tools:visibility="visible" />
+
+        <!-- Bouton Quitter l'appel (Rouge) -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnEndCall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/end_call"
+            android:src="@drawable/ic_call_end"
+            app:backgroundTint="@color/colorError"
+            app:fabSize="normal"
+            app:tint="@android:color/white" />
+    </LinearLayout>
+
+    <!-- Appel entrant (avant acceptance) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/incomingCallLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#AA000000"
+        android:visibility="gone"
+        tools:visibility="gone">
+
+        <!-- Avatar de l'appelant -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/ivIncomingAvatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:contentDescription="@string/photo"
+            android:src="@drawable/ic_default_avatar"
+            app:layout_constraintBottom_toTopOf="@+id/tvIncomingName"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <!-- Nom de l'appelant -->
+        <TextView
+            android:id="@+id/tvIncomingName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textColor="@android:color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivIncomingAvatar"
+            tools:text="Jean Dupont" />
+
+        <!-- Type d'appel -->
+        <TextView
+            android:id="@+id/tvIncomingCallType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:alpha="0.8"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvIncomingName"
+            tools:text="Appel vocal entrant" />
+
+        <!-- Boutons d'action pour appel entrant -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="24dp"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- Refuser l'appel -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnDeclineCall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
+                android:contentDescription="@string/decline"
+                android:src="@drawable/ic_call_end"
+                app:backgroundTint="@color/colorError"
+                app:fabSize="normal"
+                app:tint="@android:color/white" />
+
+            <!-- Accepter l'appel -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnAcceptCall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/accept"
+                android:src="@drawable/ic_call"
+                app:backgroundTint="@color/colorSuccess"
+                app:fabSize="normal"
+                app:tint="@android:color/white" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Phone outline -->
+    <path
+        android:fillColor="@color/colorPrimary"
+        android:pathData="M65,30h70c5.523,0 10,4.477 10,10v120c0,5.523 -4.477,10 -10,10H65c-5.523,0 -10,-4.477 -10,-10V40C55,34.477 59.477,30 65,30z" />
+
+    <!-- Phone screen -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M65,45h70v100H65z" />
+
+    <!-- Chat preview lines -->
+    <path
+        android:fillColor="@color/colorPrimaryLight"
+        android:pathData="M75,60h40v8H75z" />
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M75,75h50v6H75z" />
+    <path
+        android:fillColor="@color/colorPrimaryLight"
+        android:pathData="M95,90h30v8H95z" />
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M75,105h50v6H75z" />
+    <path
+        android:fillColor="@color/colorPrimaryLight"
+        android:pathData="M75,120h35v8H75z" />
+
+    <!-- Home button/notch -->
+    <path
+        android:fillColor="#E0E0E0"
+        android:pathData="M95,155h10v5H95z" />
+
+    <!-- Checkmark -->
+    <path
+        android:fillColor="@color/colorPrimaryLight"
+        android:strokeColor="@color/colorPrimaryLight"
+        android:strokeWidth="3"
+        android:pathData="M150,50l-15,15l-8,-8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+</vector>

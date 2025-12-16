@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="4dp"
+    android:paddingHorizontal="12dp">
+
+    <!-- Container principal avec swipe-to-reply -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/messageContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="64dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Card du message avec design moderne -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            app:cardBackgroundColor="@color/chatBubbleSent"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="2dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="14dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="6dp">
+
+                <!-- Zone de réponse (si le message répond à un autre) -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/replyCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="#E8F5E9"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:id="@+id/tvReplySenderName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            tools:text="Vous" />
+
+                        <TextView
+                            android:id="@+id/tvReplyText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:textColor="@color/textSecondary"
+                            android:textSize="12sp"
+                            tools:text="Message original..." />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Contenu du message texte -->
+                <TextView
+                    android:id="@+id/tvMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:autoLink="web"
+                    android:lineSpacingExtra="2dp"
+                    android:maxWidth="260dp"
+                    android:textColor="@color/textPrimary"
+                    android:textIsSelectable="true"
+                    android:textSize="15sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/replyCard"
+                    tools:text="Ceci est un message test" />
+
+                <!-- Image du message -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivImage"
+                    android:layout_width="220dp"
+                    android:layout_height="220dp"
+                    android:contentDescription="@string/photo"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/replyCard"
+                    app:shapeAppearanceOverlay="@style/RoundedImageView"
+                    tools:src="@drawable/ic_default_avatar"
+                    tools:visibility="visible" />
+
+                <!-- Message vocal -->
+                <LinearLayout
+                    android:id="@+id/voiceMessageLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/replyCard"
+                    tools:visibility="visible">
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/btnPlayPause"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/play_voice_message"
+                        android:src="@drawable/ic_play"
+                        app:backgroundTint="@color/colorPrimary"
+                        app:fabSize="mini"
+                        app:tint="@android:color/white" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:orientation="vertical">
+
+                        <ProgressBar
+                            android:id="@+id/voiceProgress"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="150dp"
+                            android:layout_height="4dp"
+                            android:max="100"
+                            android:progressTint="@color/colorPrimary" />
+
+                        <TextView
+                            android:id="@+id/tvVoiceDuration"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="@color/textSecondary"
+                            android:textSize="11sp"
+                            tools:text="0:45" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Zone de réactions -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/reactionsGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:visibility="gone"
+                    app:chipSpacingHorizontal="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvMessage"
+                    tools:visibility="visible">
+                    <!-- Les chips de réactions seront ajoutées dynamiquement -->
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Heure et statut -->
+                <LinearLayout
+                    android:id="@+id/timeStatusLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/reactionsGroup">
+
+                    <TextView
+                        android:id="@+id/tvEdited"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:text="@string/edited"
+                        android:textColor="@color/textSecondary"
+                        android:textSize="10sp"
+                        android:textStyle="italic"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                    <TextView
+                        android:id="@+id/tvTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/textSecondary"
+                        android:textSize="11sp"
+                        tools:text="14:32" />
+
+                    <ImageView
+                        android:id="@+id/ivStatus"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="4dp"
+                        android:contentDescription="@string/message_status"
+                        tools:src="@drawable/ic_status_seen" />
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

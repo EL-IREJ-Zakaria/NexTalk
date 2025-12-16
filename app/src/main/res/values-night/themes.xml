@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Base.Theme.NexTalk" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="android:colorBackground">@color/colorBackgroundDark</item>
+        <item name="colorSurface">@color/colorSurfaceDark</item>
+        <item name="android:textColorPrimary">@color/textPrimaryDark</item>
+        <item name="android:textColorSecondary">@color/textSecondaryDark</item>
+        <item name="android:statusBarColor">@color/colorBackgroundDark</item>
+        <item name="android:navigationBarColor">@color/colorBackgroundDark</item>
+    </style>
+
+</resources>

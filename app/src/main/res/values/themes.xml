@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Base.Theme.NexTalk" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="android:textColorPrimary">@color/textPrimary</item>
+        <item name="android:textColorSecondary">@color/textSecondary</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="android:navigationBarColor">@color/colorBackground</item>
+    </style>
+
+    <style name="Theme.NexTalk" parent="Base.Theme.NexTalk" />
+
+    <!-- Splash Theme -->
+    <style name="Theme.NexTalk.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/colorPrimary</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.NexTalk</item>
+    </style>
+
+    <!-- Auth Theme -->
+    <style name="Theme.NexTalk.Auth" parent="Theme.NexTalk">
+        <item name="android:windowBackground">@color/colorBackground</item>
+    </style>
+
+    <!-- Chat Theme -->
+    <style name="Theme.NexTalk.Chat" parent="Theme.NexTalk">
+        <item name="android:windowBackground">@color/chatBackground</item>
+    </style>
+
+    <!-- Style pour les images arrondies dans les messages -->
+    <style name="RoundedImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <!-- Style pour les chips de réactions -->
+    <style name="ReactionChipStyle" parent="Widget.Material3.Chip.Suggestion">
+        <item name="chipBackgroundColor">@color/white</item>
+        <item name="chipStrokeColor">@color/divider</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipCornerRadius">16dp</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+</resources>

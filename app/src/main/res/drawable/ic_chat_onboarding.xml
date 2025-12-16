@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+
+    <!-- Chat bubbles illustration -->
+    <path
+        android:fillColor="@color/colorPrimaryLight"
+        android:pathData="M60,40c-22.091,0 -40,16.074 -40,35.833c0,7.945 3.006,15.3 8.101,21.23l-4.768,17.937l19.29,-9.645c5.415,2.244 11.377,3.478 17.377,3.478c22.091,0 40,-16.074 40,-35.833S82.091,40 60,40z" />
+
+    <path
+        android:fillColor="@color/colorPrimary"
+        android:pathData="M140,80c-22.091,0 -40,16.074 -40,35.833c0,7.945 3.006,15.3 8.101,21.23l-4.768,17.937l19.29,-9.645c5.415,2.244 11.377,3.478 17.377,3.478c22.091,0 40,-16.074 40,-35.833S162.091,80 140,80z" />
+
+    <!-- Lightning bolt for speed -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M55,55l10,-15l-5,0l8,-15l-18,20l8,0l-8,15z" />
+
+    <!-- Dots in second bubble -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M125,115m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M140,115m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M155,115m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+
+</vector>

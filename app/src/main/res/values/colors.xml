@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Primary Colors -->
+    <color name="colorPrimary">#075E54</color>
+    <color name="colorPrimaryDark">#064E47</color>
+    <color name="colorPrimaryLight">#25D366</color>
+    <color name="colorAccent">#25D366</color>
+
+    <!-- Secondary Colors -->
+    <color name="colorSecondary">#128C7E</color>
+    <color name="colorSecondaryDark">#075E54</color>
+
+    <!-- Background Colors -->
+    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorBackgroundDark">#121212</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorSurfaceDark">#1E1E1E</color>
+
+    <!-- Chat Colors -->
+    <color name="chatBubbleSent">#DCF8C6</color>
+    <color name="chatBubbleSentDark">#005C4B</color>
+    <color name="chatBubbleReceived">#FFFFFF</color>
+    <color name="chatBubbleReceivedDark">#202C33</color>
+    <color name="chatBackground">#ECE5DD</color>
+    <color name="chatBackgroundDark">#0B141A</color>
+
+    <!-- Text Colors -->
+    <color name="textPrimary">#000000</color>
+    <color name="textPrimaryDark">#FFFFFF</color>
+    <color name="textSecondary">#667781</color>
+    <color name="textSecondaryDark">#8696A0</color>
+
+    <!-- Status Colors -->
+    <color name="colorOnline">#25D366</color>
+    <color name="colorOffline">#8696A0</color>
+    <color name="colorError">#F44336</color>
+    <color name="colorSuccess">#4CAF50</color>
+
+    <!-- Other -->
+    <color name="divider">#E0E0E0</color>
+    <color name="dividerDark">#2A2A2A</color>
+    <color name="tabIndicator">#075E54</color>
+    <color name="tabIndicatorInactive">#C0C0C0</color>
+</resources>
