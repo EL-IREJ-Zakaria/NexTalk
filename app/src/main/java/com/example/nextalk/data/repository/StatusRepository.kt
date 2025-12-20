@@ -6,21 +6,22 @@ import com.example.nextalk.data.local.dao.StatusDao
 import com.example.nextalk.data.model.Status
 import com.example.nextalk.data.model.StatusReply
 import com.example.nextalk.data.model.StatusType
+import com.example.nextalk.service.MediaService
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 /**
  * Repository pour gérer les statuts
  */
-class StatusRepository(private val statusDao: StatusDao) {
+class StatusRepository(
+    private val statusDao: StatusDao,
+    private val mediaService: MediaService = MediaService()
+) {
 
     private val firestore = FirebaseFirestore.getInstance()
-    private val storage = FirebaseStorage.getInstance()
     private val statusesCollection = firestore.collection("statuses")
 
     companion object {
@@ -74,13 +75,21 @@ class StatusRepository(private val statusDao: StatusDao) {
         type: StatusType
     ): Result<Status> {
         return try {
+            // Upload le média via MediaService
+            val uploadResult = when (type) {
+                StatusType.IMAGE -> mediaService.uploadStatusImage(mediaUri)
+                StatusType.VIDEO -> mediaService.uploadStatusVideo(mediaUri)
+                else -> return Result.failure(Exception("Invalid media type for status"))
+            }
+
+            // Vérifier que l'upload a réussi
+            if (uploadResult.isFailure) {
+                return Result.failure(uploadResult.exceptionOrNull() ?: Exception("Upload failed"))
+            }
+
+            val mediaUrl = uploadResult.getOrNull() ?: return Result.failure(Exception("No media URL returned"))
+
             val statusId = UUID.randomUUID().toString()
-            val fileName = "statuses/${UUID.randomUUID()}.${if (type == StatusType.IMAGE) "jpg" else "mp4"}"
-            val mediaRef = storage.reference.child(fileName)
-
-            mediaRef.putFile(mediaUri).await()
-            val mediaUrl = mediaRef.downloadUrl.await().toString()
-
             val status = Status(
                 id = statusId,
                 userId = userId,
@@ -142,7 +151,7 @@ class StatusRepository(private val statusDao: StatusDao) {
             val updatedViewedBy = (status.viewedBy + userId).distinct()
 
             statusesCollection.document(statusId).update(
-                "viewedBy" to updatedViewedBy
+                mapOf("viewedBy" to updatedViewedBy)
             ).await()
 
             statusDao.updateStatus(status.copy(viewedBy = updatedViewedBy))
@@ -166,14 +175,16 @@ class StatusRepository(private val statusDao: StatusDao) {
             val updatedReplies = status.replies + reply
 
             statusesCollection.document(statusId).update(
-                "replies" to updatedReplies.map {
-                    mapOf(
-                        "userId" to it.userId,
-                        "userName" to it.userName,
-                        "message" to it.message,
-                        "timestamp" to it.timestamp
-                    )
-                }
+                mapOf(
+                    "replies" to updatedReplies.map {
+                        mapOf(
+                            "userId" to it.userId,
+                            "userName" to it.userName,
+                            "message" to it.message,
+                            "timestamp" to it.timestamp
+                        )
+                    }
+                )
             ).await()
 
             statusDao.updateStatus(status.copy(replies = updatedReplies))
@@ -216,4 +227,129 @@ class StatusRepository(private val statusDao: StatusDao) {
             Log.e(TAG, "Error getting status count", e)
             emit(0)
         }
+
+    /**
+     * Synchroniser les statuts avec Firebase
+     */
+    suspend fun syncStatusesFromFirebase(userId: String): Result<Unit> {
+        return try {
+            Log.d(TAG, "Syncing statuses from Firebase for user: $userId")
+            
+            val snapshot = statusesCollection
+                .whereEqualTo("userId", userId)
+                .whereGreaterThan("expiresAt", System.currentTimeMillis())
+                .get()
+                .await()
+
+            val statuses = snapshot.documents.mapNotNull { doc ->
+                try {
+                    Status.fromMap(doc.data ?: emptyMap(), doc.id)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing status from Firebase", e)
+                    null
+                }
+            }
+
+            // Insérer dans la DB locale
+            statuses.forEach { status ->
+                statusDao.insertStatus(status)
+            }
+
+            Log.d(TAG, "Synced ${statuses.size} statuses from Firebase")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error syncing statuses from Firebase", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Obtenir les statuts paginés
+     */
+    suspend fun getStatusesPaginated(
+        limit: Int = 20,
+        lastTimestamp: Long? = null
+    ): Result<List<Status>> {
+        return try {
+            val query = if (lastTimestamp != null) {
+                statusesCollection
+                    .whereGreaterThan("expiresAt", System.currentTimeMillis())
+                    .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                    .startAfter(lastTimestamp)
+                    .limit(limit.toLong())
+            } else {
+                statusesCollection
+                    .whereGreaterThan("expiresAt", System.currentTimeMillis())
+                    .orderBy("createdAt", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                    .limit(limit.toLong())
+            }
+
+            val snapshot = query.get().await()
+            val statuses = snapshot.documents.mapNotNull { doc ->
+                try {
+                    Status.fromMap(doc.data ?: emptyMap(), doc.id)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing status", e)
+                    null
+                }
+            }
+
+            Result.success(statuses)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting paginated statuses", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Obtenir les statuts non vus pour un utilisateur
+     */
+    fun getUnviewedStatuses(userId: String): Flow<List<Status>> = statusDao
+        .getRecentStatuses(100)
+        .catch { e ->
+            Log.e(TAG, "Error getting unviewed statuses", e)
+            emit(emptyList())
+        }
+
+    /**
+     * Supprimer un statut avec son média associé
+     */
+    suspend fun deleteStatusWithMedia(statusId: String) {
+        try {
+            val status = statusDao.getStatusById(statusId)
+            
+            if (status != null && (status.type == StatusType.IMAGE || status.type == StatusType.VIDEO)) {
+                // Supprimer le fichier média
+                mediaService.deleteFile(status.content)
+            }
+
+            // Supprimer le statut de Firestore et de la DB locale
+            statusesCollection.document(statusId).delete().await()
+            statusDao.deleteStatus(statusId)
+            
+            Log.d(TAG, "Status and media deleted successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deleting status with media", e)
+        }
+    }
+
+    /**
+     * Mettre à jour la durée d'un statut vidéo
+     */
+    suspend fun updateStatusDuration(statusId: String, duration: Long): Result<Unit> {
+        return try {
+            val status = statusDao.getStatusById(statusId) 
+                ?: return Result.failure(Exception("Status not found"))
+
+            val updatedStatus = status.copy(duration = duration)
+            
+            statusesCollection.document(statusId).update("duration", duration).await()
+            statusDao.updateStatus(updatedStatus)
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating status duration", e)
+            Result.failure(e)
+        }
+    }
 }

@@ -1,102 +1,175 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground">
 
-    <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorPrimary"
-        android:elevation="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:navigationIcon="@drawable/ic_back"
-        app:navigationIconTint="@android:color/white"
-        app:title="@string/statuses"
-        app:titleTextColor="@android:color/white" />
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <!-- RecyclerView des statuts -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvStatuses"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:paddingVertical="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        tools:listitem="@layout/item_status_user" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            app:navigationIcon="@drawable/ic_back"
+            app:navigationIconTint="@android:color/white"
+            app:title="@string/statuses"
+            app:titleTextColor="@android:color/white" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- État vide -->
-    <LinearLayout
-        android:id="@+id/emptyState"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        tools:visibility="gone">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:alpha="0.5"
-            android:contentDescription="@string/no_statuses"
-            android:src="@drawable/ic_chat_empty" />
+        <!-- My Status Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardMyStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/ivMyPhoto"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:src="@drawable/ic_default_avatar"
+                    app:civ_border_color="@color/colorPrimary"
+                    app:civ_border_width="2dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/ivAddStatusIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:background="@drawable/bg_online_indicator"
+                    android:backgroundTint="@color/colorPrimaryLight"
+                    android:padding="4dp"
+                    android:src="@drawable/ic_add_status"
+                    app:layout_constraintBottom_toBottomOf="@id/ivMyPhoto"
+                    app:layout_constraintEnd_toEndOf="@id/ivMyPhoto"
+                    app:tint="@android:color/white" />
+
+                <TextView
+                    android:id="@+id/tvMyStatus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@string/your_story"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/ivMyPhoto"
+                    app:layout_constraintTop_toTopOf="@id/ivMyPhoto" />
+
+                <TextView
+                    android:id="@+id/tvAddStatusHint"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/add_status"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/ivMyPhoto"
+                    app:layout_constraintTop_toBottomOf="@id/tvMyStatus" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tvRecentUpdates"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:text="@string/no_statuses"
+            android:text="Mises à jour récentes"
+            android:textAllCaps="true"
             android:textColor="?android:attr/textColorSecondary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/cardMyStatus" />
 
-        <TextView
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvStatuses"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvRecentUpdates" />
+
+        <!-- Empty State -->
+        <LinearLayout
+            android:id="@+id/layoutNoStatuses"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/no_statuses_yet"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="14sp" />
-    </LinearLayout>
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvRecentUpdates">
 
-    <!-- ProgressBar -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/rvStatuses"
-        app:layout_constraintEnd_toEndOf="@+id/rvStatuses"
-        app:layout_constraintStart_toStartOf="@+id/rvStatuses"
-        app:layout_constraintTop_toTopOf="@+id/rvStatuses"
-        tools:visibility="gone" />
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:alpha="0.5"
+                android:contentDescription="@string/no_statuses"
+                android:src="@drawable/ic_add_status"
+                app:tint="?android:attr/textColorSecondary" />
 
-    <!-- Bouton flottant pour ajouter un statut -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/no_statuses"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="18sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/no_statuses_yet"
+                android:textColor="?android:attr/textColorSecondary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- FAB for adding status -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
         android:contentDescription="@string/add_status"
         android:src="@drawable/ic_add_status"
         app:backgroundTint="@color/colorPrimaryLight"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:tint="@android:color/white" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

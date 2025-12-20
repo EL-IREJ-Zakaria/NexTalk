@@ -27,6 +27,12 @@
     <color name="chatBackground">#ECE5DD</color>
     <color name="chatBackgroundDark">#0B141A</color>
 
+    <!-- Call Colors -->
+    <color name="callBackground">#1A1A2E</color>
+    <color name="callAccept">#4CAF50</color>
+    <color name="callDecline">#F44336</color>
+    <color name="callControlBackground">#2D2D44</color>
+
     <!-- Text Colors -->
     <color name="textPrimary">#000000</color>
     <color name="textPrimaryDark">#FFFFFF</color>

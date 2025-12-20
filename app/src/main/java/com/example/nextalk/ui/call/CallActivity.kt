@@ -36,6 +36,7 @@ class CallActivity : AppCompatActivity() {
         const val EXTRA_USER_NAME = "user_name"
         const val EXTRA_USER_PHOTO = "user_photo"
         const val EXTRA_IS_INCOMING = "is_incoming"
+        const val EXTRA_CONVERSATION_ID = "conversation_id"
         private const val TAG = "CallActivity"
     }
 
@@ -176,13 +177,28 @@ class CallActivity : AppCompatActivity() {
         binding.incomingCallLayout.visibility = View.GONE
         binding.ivUserAvatar.visibility = View.VISIBLE
         binding.tvCallStatus.text = getString(R.string.calling)
-        binding.callControlsLayout.visibility = View.GONE
+        // Afficher les contrôles pour permettre de raccrocher
+        binding.callControlsLayout.visibility = View.VISIBLE
 
-        // Attendre 5 secondes avant de considérer que l'appel n'est pas répondu
+        // Simuler que l'appel est connecté après 3 secondes (pour démo)
+        lifecycleScope.launch {
+            kotlinx.coroutines.delay(3000)
+            if (!isFinishing && !isCallActive) {
+                // Simuler la connexion de l'appel
+                isCallActive = true
+                binding.tvCallStatus.text = getString(R.string.call_connected)
+                binding.chronometer.visibility = View.VISIBLE
+                binding.chronometer.base = SystemClock.elapsedRealtime()
+                binding.chronometer.start()
+            }
+        }
+        
+        // Timeout après 30 secondes si l'appel n'est pas actif
         lifecycleScope.launch {
             kotlinx.coroutines.delay(30000)
-            if (!isCallActive) {
-                endCall()
+            if (!isCallActive && !isFinishing) {
+                Toast.makeText(this@CallActivity, R.string.call_missed, Toast.LENGTH_SHORT).show()
+                finish()
             }
         }
     }
@@ -224,19 +240,28 @@ class CallActivity : AppCompatActivity() {
 
     private fun endCall() {
         binding.chronometer.stop()
+        
+        // Calculer la durée seulement si l'appel était actif
+        val duration = if (isCallActive && binding.chronometer.base > 0) {
+            (SystemClock.elapsedRealtime() - binding.chronometer.base) / 1000
+        } else {
+            0L
+        }
+        
+        val finalStatus = if (isCallActive) CallStatus.ENDED else CallStatus.MISSED
 
         lifecycleScope.launch {
             try {
-                val duration = (SystemClock.elapsedRealtime() - binding.chronometer.base) / 1000
-                callRepository.updateCallStatus(callId, CallStatus.ENDED, duration)
-                Toast.makeText(this@CallActivity, R.string.call_ended, Toast.LENGTH_SHORT).show()
-
-                // Rediriger vers la conversation
-                finish()
+                if (callId.isNotEmpty()) {
+                    callRepository.updateCallStatus(callId, finalStatus, duration)
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error ending call", e)
             }
         }
+        
+        Toast.makeText(this@CallActivity, R.string.call_ended, Toast.LENGTH_SHORT).show()
+        finish()
     }
 
     private fun updateMicrophoneState(muted: Boolean) {
@@ -247,7 +272,7 @@ class CallActivity : AppCompatActivity() {
     private fun updateSpeakerState(enabled: Boolean) {
         val audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            audioManager.speakerphoneOn = enabled
+            audioManager.isSpeakerphoneOn = enabled
         }
         Log.d(TAG, "Speaker enabled: $enabled")
     }

@@ -33,6 +33,14 @@
         <item name="android:windowBackground">@color/chatBackground</item>
     </style>
 
+    <!-- Call Theme (écran sombre pour les appels) -->
+    <style name="Theme.NexTalk.Call" parent="Theme.NexTalk">
+        <item name="android:windowBackground">@color/callBackground</item>
+        <item name="android:statusBarColor">@color/callBackground</item>
+        <item name="android:navigationBarColor">@color/callBackground</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
     <!-- Style pour les images arrondies dans les messages -->
     <style name="RoundedImageView">
         <item name="cornerFamily">rounded</item>
@@ -46,6 +54,33 @@
         <item name="chipStrokeWidth">1dp</item>
         <item name="chipCornerRadius">16dp</item>
         <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- BottomSheet Theme -->
+    <style name="Theme.NexTalk.BottomSheet" parent="Theme.Material3.DayNight.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+    </style>
+
+    <style name="BottomSheetStyle" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="shapeAppearanceOverlay">@style/BottomSheetShapeAppearance</item>
+        <item name="backgroundTint">?android:attr/colorBackground</item>
+    </style>
+
+    <style name="BottomSheetShapeAppearance">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">20dp</item>
+        <item name="cornerSizeTopRight">20dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <!-- Status Activity Theme (fullscreen colored background) -->
+    <style name="Theme.NexTalk.Status" parent="Theme.NexTalk">
+        <item name="android:windowBackground">@color/colorPrimary</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
+        <item name="android:navigationBarColor">@color/colorPrimary</item>
     </style>
 
 </resources>

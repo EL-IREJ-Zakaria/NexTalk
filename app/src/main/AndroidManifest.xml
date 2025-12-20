@@ -10,9 +10,17 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -102,6 +110,34 @@
             android:name=".ui.profile.ChangePhoneActivity"
             android:exported="false"
             android:theme="@style/Theme.NexTalk.Auth"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Call Activity -->
+        <activity
+            android:name=".ui.call.CallActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NexTalk.Call"
+            android:screenOrientation="portrait"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
+
+        <!-- Call History Activity -->
+        <activity
+            android:name=".ui.call.CallsHistoryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NexTalk" />
+
+        <!-- Statuses Activity -->
+        <activity
+            android:name=".ui.status.StatusesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NexTalk" />
+
+        <!-- Add Text Status Activity -->
+        <activity
+            android:name=".ui.status.AddTextStatusActivity"
+            android:exported="false"
+            android:theme="@style/Theme.NexTalk.Status"
             android:windowSoftInputMode="adjustResize" />
 
         <!-- Firebase Messaging Service -->

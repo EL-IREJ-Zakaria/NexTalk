@@ -46,13 +46,14 @@
                 tools:visibility="visible" />
 
             <LinearLayout
+                android:id="@+id/userInfoLayout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="8dp"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnVoiceCall"
                 app:layout_constraintStart_toEndOf="@+id/ivAvatar"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -76,6 +77,35 @@
                     android:alpha="0.9"
                     tools:text="En ligne" />
             </LinearLayout>
+
+            <!-- Bouton appel vocal -->
+            <ImageButton
+                android:id="@+id/btnVoiceCall"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/voice_call"
+                android:src="@drawable/ic_call"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnVideoCall"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@android:color/white" />
+
+            <!-- Bouton appel vidéo -->
+            <ImageButton
+                android:id="@+id/btnVideoCall"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/video_call"
+                android:src="@drawable/ic_camera"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@android:color/white" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.MaterialToolbar>
 

@@ -1,10 +1,14 @@
 package com.example.nextalk.data.local
 
 import androidx.room.TypeConverter
+import com.example.nextalk.data.model.CallStatus
+import com.example.nextalk.data.model.CallType
 import com.example.nextalk.data.model.MessageReaction
 import com.example.nextalk.data.model.MessageStatus
 import com.example.nextalk.data.model.MessageType
 import com.example.nextalk.data.model.ReplyInfo
+import com.example.nextalk.data.model.StatusReply
+import com.example.nextalk.data.model.StatusType
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -86,6 +90,71 @@ class Converters {
             } catch (e: Exception) {
                 null
             }
+        }
+    }
+
+    // Converter pour StatusType
+    @TypeConverter
+    fun fromStatusType(type: StatusType): String {
+        return type.name
+    }
+
+    @TypeConverter
+    fun toStatusType(value: String): StatusType {
+        return try {
+            StatusType.valueOf(value)
+        } catch (e: Exception) {
+            StatusType.TEXT
+        }
+    }
+
+    // Converter pour List<StatusReply>
+    @TypeConverter
+    fun fromStatusReplyList(replies: List<StatusReply>): String {
+        return gson.toJson(replies)
+    }
+
+    @TypeConverter
+    fun toStatusReplyList(value: String): List<StatusReply> {
+        return if (value.isEmpty()) {
+            emptyList()
+        } else {
+            try {
+                val type = object : TypeToken<List<StatusReply>>() {}.type
+                gson.fromJson(value, type)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+    }
+
+    // Converter pour CallType
+    @TypeConverter
+    fun fromCallType(type: CallType): String {
+        return type.name
+    }
+
+    @TypeConverter
+    fun toCallType(value: String): CallType {
+        return try {
+            CallType.valueOf(value)
+        } catch (e: Exception) {
+            CallType.VOICE
+        }
+    }
+
+    // Converter pour CallStatus
+    @TypeConverter
+    fun fromCallStatus(status: CallStatus): String {
+        return status.name
+    }
+
+    @TypeConverter
+    fun toCallStatus(value: String): CallStatus {
+        return try {
+            CallStatus.valueOf(value)
+        } catch (e: Exception) {
+            CallStatus.INCOMING
         }
     }
 }

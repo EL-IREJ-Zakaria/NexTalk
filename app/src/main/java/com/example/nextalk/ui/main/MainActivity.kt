@@ -4,6 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.SearchView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,14 +16,19 @@ import com.example.nextalk.data.preferences.PreferencesManager
 import com.example.nextalk.data.repository.AuthRepository
 import com.example.nextalk.data.repository.ChatRepository
 import com.example.nextalk.data.repository.UserRepository
+import com.example.nextalk.data.repository.CallRepository
 import com.example.nextalk.databinding.ActivityMainBinding
 import com.example.nextalk.ui.auth.LoginActivity
+import com.example.nextalk.ui.call.CallsHistoryActivity
 import com.example.nextalk.ui.chat.ChatActivity
 import com.example.nextalk.ui.profile.ProfileActivity
 import com.example.nextalk.ui.users.UsersActivity
+import com.google.android.material.badge.BadgeDrawable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,11 +36,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var conversationAdapter: ConversationAdapter
     private lateinit var chatRepository: ChatRepository
     private lateinit var userRepository: UserRepository
+    private lateinit var callRepository: CallRepository
     private val authRepository = AuthRepository()
     private lateinit var preferencesManager: PreferencesManager
+    
+    // Nouvelles fonctionnalités
+    private var searchJob: Job? = null
+    private var allConversations: List<com.example.nextalk.data.model.Conversation> = emptyList()
+    private var unreadCount = 0
+    private var missedCallsCount = 0
 
     companion object {
         private const val TAG = "MainActivity"
+        private const val SEARCH_DELAY_MS = 300L
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +66,7 @@ class MainActivity : AppCompatActivity() {
 
             initRepositories()
             setupToolbar()
+            setupBottomNavigation()
             setupRecyclerView()
             setupFab()
             observeConversations()
@@ -84,6 +101,43 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+    
+    private fun setupBottomNavigation() {
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_conversations -> {
+                    // Déjà sur l'écran des conversations
+                    binding.rvConversations.visibility = View.VISIBLE
+                    binding.fabNewChat.visibility = View.VISIBLE
+                    binding.toolbar.title = getString(R.string.app_name)
+                    true
+                }
+                R.id.nav_calls -> {
+                    // Naviguer vers l'historique des appels
+                    startActivity(Intent(this, CallsHistoryActivity::class.java))
+                    // Garder l'onglet conversations sélectionné pour éviter la confusion
+                    binding.bottomNavigation.selectedItemId = R.id.nav_conversations
+                    true
+                }
+                R.id.nav_statuses -> {
+                    // Naviguer vers les statuts (si implémenté)
+                    try {
+                        val statusIntent = Intent(this, Class.forName("com.example.nextalk.ui.status.StatusesActivity"))
+                        startActivity(statusIntent)
+                    } catch (e: ClassNotFoundException) {
+                        Log.d(TAG, "StatusesActivity not found")
+                    }
+                    // Garder l'onglet conversations sélectionné
+                    binding.bottomNavigation.selectedItemId = R.id.nav_conversations
+                    true
+                }
+                else -> false
+            }
+        }
+        
+        // Sélectionner l'onglet conversations par défaut
+        binding.bottomNavigation.selectedItemId = R.id.nav_conversations
     }
 
     private fun setupRecyclerView() {

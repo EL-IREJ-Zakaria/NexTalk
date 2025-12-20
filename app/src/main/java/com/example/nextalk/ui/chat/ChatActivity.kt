@@ -1,6 +1,7 @@
 package com.example.nextalk.ui.chat
 
 import android.animation.ObjectAnimator
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -28,10 +29,15 @@ import com.example.nextalk.data.repository.AuthRepository
 import com.example.nextalk.data.repository.ChatRepository
 import com.example.nextalk.data.repository.UserRepository
 import com.example.nextalk.databinding.ActivityChatBinding
+import com.example.nextalk.ui.call.CallActivity
+import com.example.nextalk.data.model.CallType
+import com.example.nextalk.data.repository.CallRepository
 import com.example.nextalk.util.NetworkUtil
+import com.example.nextalk.util.FirebaseConnectionTester
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.UUID
 import kotlin.math.abs
 
 /**
@@ -56,7 +62,14 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var messageAdapter: MessageAdapter
     private lateinit var chatRepository: ChatRepository
     private lateinit var userRepository: UserRepository
+    private lateinit var callRepository: CallRepository
     private val authRepository = AuthRepository()
+    
+    // Info utilisateur pour les appels
+    private var otherUserName: String = ""
+    private var otherUserPhotoUrl: String = ""
+    private var currentUserName: String = ""
+    private var currentUserPhotoUrl: String = ""
 
     private var conversationId: String = ""
     private var otherUserId: String = ""
@@ -106,11 +119,126 @@ class ChatActivity : AppCompatActivity() {
         val database = NexTalkApplication.instance.database
         chatRepository = ChatRepository(database.conversationDao(), database.messageDao())
         userRepository = UserRepository(database.userDao())
+        callRepository = CallRepository(database.callDao())
+        
+        // Charger les infos de l'utilisateur actuel
+        loadCurrentUserInfo()
+    }
+    
+    private fun loadCurrentUserInfo() {
+        lifecycleScope.launch {
+            try {
+                val currentUserId = authRepository.getCurrentUserId() ?: return@launch
+                val user = userRepository.getUserById(currentUserId)
+                user?.let {
+                    currentUserName = it.name
+                    currentUserPhotoUrl = it.photoUrl
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading current user info", e)
+            }
+        }
     }
 
     private fun setupToolbar() {
         binding.toolbar.setNavigationOnClickListener {
             finish()
+        }
+        
+        // Ajouter le menu à la toolbar
+        binding.toolbar.inflateMenu(R.menu.menu_chat)
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_test_connection -> {
+                    testFirebaseConnection()
+                    true
+                }
+                else -> false
+            }
+        }
+        
+        // Bouton appel vocal
+        binding.btnVoiceCall.setOnClickListener {
+            startCall(CallType.VOICE)
+        }
+        
+        // Bouton appel vidéo
+        binding.btnVideoCall.setOnClickListener {
+            startCall(CallType.VIDEO)
+        }
+    }
+    
+    /**
+     * Teste la connexion Firebase et affiche un diagnostic
+     */
+    private fun testFirebaseConnection() {
+        lifecycleScope.launch {
+            try {
+                Toast.makeText(this@ChatActivity, "Test en cours...", Toast.LENGTH_SHORT).show()
+                
+                // Test complet
+                val report = FirebaseConnectionTester.generateDiagnosticReport()
+                
+                // Test spécifique à la messagerie
+                val messagingOk = FirebaseConnectionTester.testMessaging(conversationId)
+                
+                // Afficher le résultat
+                val message = if (messagingOk) {
+                    "✅ Messagerie fonctionnelle !\n\nSi les messages ne s'affichent pas chez l'autre utilisateur :\n1. Vérifiez qu'il a une connexion Internet\n2. Vérifiez qu'il est dans la même conversation\n3. Consultez les logs (Logcat)"
+                } else {
+                    "❌ Problème détecté !\n\nVérifiez les logs Logcat pour plus de détails.\n\nSolution probable :\n- Configurez les règles Firestore\n- Voir le fichier firestore.rules\n- Console: console.firebase.google.com"
+                }
+                
+                AlertDialog.Builder(this@ChatActivity)
+                    .setTitle("Test de connexion Firebase")
+                    .setMessage(message)
+                    .setPositiveButton("OK", null)
+                    .setNeutralButton("Voir logs") { _, _ ->
+                        Toast.makeText(this@ChatActivity, "Consultez Logcat avec le filtre 'FirebaseTest'", Toast.LENGTH_LONG).show()
+                    }
+                    .show()
+                    
+            } catch (e: Exception) {
+                Log.e(TAG, "Error testing connection", e)
+                Toast.makeText(this@ChatActivity, "Erreur lors du test", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    private fun startCall(callType: CallType) {
+        val currentUserId = authRepository.getCurrentUserId() ?: return
+        
+        // Générer un ID d'appel unique
+        val callId = UUID.randomUUID().toString()
+        
+        // Lancer l'activité d'appel immédiatement (meilleure UX)
+        val intent = Intent(this@ChatActivity, CallActivity::class.java).apply {
+            putExtra(CallActivity.EXTRA_CALL_ID, callId)
+            putExtra(CallActivity.EXTRA_CALL_TYPE, callType.name)
+            putExtra(CallActivity.EXTRA_USER_ID, otherUserId)
+            putExtra(CallActivity.EXTRA_USER_NAME, otherUserName)
+            putExtra(CallActivity.EXTRA_USER_PHOTO, otherUserPhotoUrl)
+            putExtra(CallActivity.EXTRA_IS_INCOMING, false)
+            putExtra(CallActivity.EXTRA_CONVERSATION_ID, conversationId)
+        }
+        startActivity(intent)
+        
+        // Enregistrer l'appel en arrière-plan (async)
+        lifecycleScope.launch {
+            try {
+                callRepository.initiateCall(
+                    conversationId = conversationId,
+                    callerId = currentUserId,
+                    callerName = currentUserName,
+                    callerPhotoUrl = currentUserPhotoUrl,
+                    receiverId = otherUserId,
+                    receiverName = otherUserName,
+                    receiverPhotoUrl = otherUserPhotoUrl,
+                    type = callType
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error registering call", e)
+            }
         }
     }
 
@@ -403,6 +531,10 @@ class ChatActivity : AppCompatActivity() {
                     }
                     .collectLatest { user ->
                         user?.let {
+                            // Stocker les infos pour les appels
+                            otherUserName = it.name
+                            otherUserPhotoUrl = it.photoUrl
+                            
                             binding.tvName.text = it.name
                             binding.tvStatus.text = if (it.isOnline) {
                                 getString(R.string.online)
@@ -439,12 +571,43 @@ class ChatActivity : AppCompatActivity() {
     private fun observeMessages() {
         lifecycleScope.launch {
             try {
+                Log.d(TAG, "👂 Démarrage de l'écoute des messages...")
+                Log.d(TAG, "   ConversationId: $conversationId")
+                
                 chatRepository.getMessages(conversationId)
                     .catch { e ->
-                        Log.e(TAG, "Error getting messages", e)
+                        Log.e(TAG, "❌ Erreur lors de l'écoute des messages", e)
+                        
+                        when {
+                            e.message?.contains("PERMISSION_DENIED") == true -> {
+                                Log.e(TAG, "❌ ERREUR : Permission refusée pour lire les messages")
+                                Log.e(TAG, "   → Configurez les règles Firestore (firestore.rules)")
+                            }
+                            e.message?.contains("UNAVAILABLE") == true -> {
+                                Log.e(TAG, "❌ ERREUR : Firestore indisponible (pas de connexion)")
+                            }
+                        }
                     }
                     .collectLatest { messages ->
                         val oldSize = messageAdapter.currentList.size
+                        val newSize = messages.size
+                        
+                        Log.d(TAG, "📨 Messages reçus : $newSize messages")
+                        
+                        if (newSize > oldSize) {
+                            val newMessages = newSize - oldSize
+                            Log.d(TAG, "✨ Nouveau(x) message(s) : $newMessages")
+                            
+                            // Afficher le dernier message pour debug
+                            messages.lastOrNull()?.let { lastMsg ->
+                                Log.d(TAG, "   Dernier message :")
+                                Log.d(TAG, "      Texte: ${lastMsg.text}")
+                                Log.d(TAG, "      De: ${lastMsg.senderId}")
+                                Log.d(TAG, "      À: ${if (lastMsg.senderId == authRepository.getCurrentUserId()) "moi" else "l'autre"}")
+                                Log.d(TAG, "      Timestamp: ${lastMsg.timestamp}")
+                            }
+                        }
+                        
                         messageAdapter.submitList(messages) {
                             if (messages.isNotEmpty()) {
                                 // Scroll seulement si nouveau message ou proche du bas
@@ -463,7 +626,8 @@ class ChatActivity : AppCompatActivity() {
                         }
                     }
             } catch (e: Exception) {
-                Log.e(TAG, "Error observing messages", e)
+                Log.e(TAG, "❌ Erreur critique lors de l'observation", e)
+                Log.e(TAG, "   ${e.message}")
             }
         }
     }
@@ -480,6 +644,12 @@ class ChatActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
+                Log.d(TAG, "📤 Envoi de message...")
+                Log.d(TAG, "   ConversationId: $conversationId")
+                Log.d(TAG, "   SenderId: $currentUserId")
+                Log.d(TAG, "   Text: $text")
+                Log.d(TAG, "   OtherUserId: $otherUserId")
+                
                 val replyInfo = replyToMessage?.let {
                     ReplyInfo(
                         messageId = it.id,
@@ -491,6 +661,8 @@ class ChatActivity : AppCompatActivity() {
                 }
 
                 if (NetworkUtil.isNetworkAvailable(this@ChatActivity)) {
+                    Log.d(TAG, "✅ Connexion Internet disponible")
+                    
                     val result = chatRepository.sendMessage(
                         conversationId = conversationId,
                         senderId = currentUserId,
@@ -499,10 +671,41 @@ class ChatActivity : AppCompatActivity() {
                         replyTo = replyInfo
                     )
 
-                    result.onFailure {
-                        Toast.makeText(this@ChatActivity, R.string.error_occurred, Toast.LENGTH_SHORT).show()
+                    result.onSuccess { message ->
+                        Log.d(TAG, "✅ Message envoyé avec succès !")
+                        Log.d(TAG, "   MessageId: ${message.id}")
+                        Log.d(TAG, "   Timestamp: ${message.timestamp}")
+                        Log.d(TAG, "   Le message devrait apparaître chez l'autre utilisateur instantanément")
+                    }
+                    
+                    result.onFailure { error ->
+                        Log.e(TAG, "❌ Échec de l'envoi du message", error)
+                        
+                        when {
+                            error.message?.contains("PERMISSION_DENIED") == true -> {
+                                Log.e(TAG, "❌ ERREUR CRITIQUE : Permission refusée par Firestore")
+                                Log.e(TAG, "   SOLUTION : Configurez les règles Firestore")
+                                Log.e(TAG, "   1. Ouvrez https://console.firebase.google.com")
+                                Log.e(TAG, "   2. Firestore Database → Règles")
+                                Log.e(TAG, "   3. Copiez le contenu de firestore.rules")
+                                Toast.makeText(
+                                    this@ChatActivity,
+                                    "Permission refusée. Vérifiez les règles Firestore.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            error.message?.contains("NOT_FOUND") == true -> {
+                                Log.e(TAG, "❌ Conversation non trouvée")
+                                Toast.makeText(this@ChatActivity, "Conversation introuvable", Toast.LENGTH_SHORT).show()
+                            }
+                            else -> {
+                                Toast.makeText(this@ChatActivity, R.string.error_occurred, Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 } else {
+                    Log.w(TAG, "⚠️ Pas de connexion Internet - Mode hors ligne")
+                    
                     // Mode hors-ligne
                     chatRepository.sendMessageOffline(
                         conversationId = conversationId,
@@ -510,12 +713,16 @@ class ChatActivity : AppCompatActivity() {
                         text = text,
                         type = MessageType.TEXT
                     )
+                    
+                    Log.d(TAG, "💾 Message sauvegardé localement (sera envoyé plus tard)")
                     Toast.makeText(this@ChatActivity, R.string.no_internet, Toast.LENGTH_SHORT).show()
                 }
 
                 hideReplyPreview()
             } catch (e: Exception) {
-                Log.e(TAG, "Error sending message", e)
+                Log.e(TAG, "❌ Erreur critique lors de l'envoi", e)
+                Log.e(TAG, "   Message d'erreur : ${e.message}")
+                Log.e(TAG, "   Stack trace : ${e.stackTraceToString()}")
                 Toast.makeText(this@ChatActivity, R.string.error_occurred, Toast.LENGTH_SHORT).show()
             }
         }

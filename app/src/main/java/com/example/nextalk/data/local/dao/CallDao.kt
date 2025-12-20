@@ -39,4 +39,7 @@ interface CallDao {
 
     @Query("SELECT * FROM calls WHERE status = 'MISSED' ORDER BY timestamp DESC")
     fun getMissedCalls(): Flow<List<Call>>
+
+    @Query("DELETE FROM calls WHERE timestamp < :timestamp")
+    suspend fun deleteCallsOlderThan(timestamp: Long)
 }
