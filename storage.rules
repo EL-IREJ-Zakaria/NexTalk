@@ -1,0 +1,88 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ==========================================
+    // RÈGLES POUR DÉVELOPPEMENT (PERMISSIF)
+    // ==========================================
+    
+    // Décommentez pour le développement :
+    /*
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    */
+    
+    // ==========================================
+    // RÈGLES POUR PRODUCTION (SÉCURISÉ)
+    // ==========================================
+    
+    // Images de profil
+    match /profile_images/{userId}/{fileName} {
+      // Lecture : tout le monde
+      allow read: if request.auth != null;
+      
+      // Écriture : uniquement le propriétaire
+      allow write: if request.auth != null && 
+                     request.auth.uid == userId &&
+                     request.resource.size < 5 * 1024 * 1024 && // Max 5MB
+                     request.resource.contentType.matches('image/.*');
+    }
+    
+    // Images de chat
+    match /chat_images/{imageId} {
+      // Lecture : utilisateurs authentifiés
+      allow read: if request.auth != null;
+      
+      // Écriture : utilisateurs authentifiés
+      allow write: if request.auth != null &&
+                     request.resource.size < 10 * 1024 * 1024 && // Max 10MB
+                     request.resource.contentType.matches('image/.*');
+    }
+    
+    // Messages vocaux
+    match /voice_messages/{voiceId} {
+      // Lecture : utilisateurs authentifiés
+      allow read: if request.auth != null;
+      
+      // Écriture : utilisateurs authentifiés
+      allow write: if request.auth != null &&
+                     request.resource.size < 5 * 1024 * 1024 && // Max 5MB
+                     (request.resource.contentType.matches('audio/.*') ||
+                      request.resource.contentType == 'application/octet-stream');
+    }
+    
+    // Images de statut (stories)
+    match /status_images/{statusId} {
+      // Lecture : utilisateurs authentifiés
+      allow read: if request.auth != null;
+      
+      // Écriture : utilisateurs authentifiés
+      allow write: if request.auth != null &&
+                     request.resource.size < 10 * 1024 * 1024 && // Max 10MB
+                     (request.resource.contentType.matches('image/.*') ||
+                      request.resource.contentType.matches('video/.*'));
+    }
+    
+    // Vidéos de statut
+    match /status_videos/{statusId} {
+      // Lecture : utilisateurs authentifiés
+      allow read: if request.auth != null;
+      
+      // Écriture : utilisateurs authentifiés
+      allow write: if request.auth != null &&
+                     request.resource.size < 50 * 1024 * 1024 && // Max 50MB
+                     request.resource.contentType.matches('video/.*');
+    }
+    
+    // Fichiers généraux
+    match /files/{fileId} {
+      // Lecture : utilisateurs authentifiés
+      allow read: if request.auth != null;
+      
+      // Écriture : utilisateurs authentifiés
+      allow write: if request.auth != null &&
+                     request.resource.size < 20 * 1024 * 1024; // Max 20MB
+    }
+  }
+}

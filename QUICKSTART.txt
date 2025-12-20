@@ -1,0 +1,78 @@
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║   🚀 NEXTALK - DÉMARRAGE RAPIDE MESSAGERIE                    ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+📌 PROBLÈME : Mes messages ne s'envoient pas à l'autre personne
+
+✅ SOLUTION RAPIDE (5 minutes) :
+
+1️⃣  Allez sur : https://console.firebase.google.com
+
+2️⃣  Cliquez sur votre projet "NexTalk"
+
+3️⃣  Menu gauche → "Firestore Database"
+
+4️⃣  Onglet "Règles" (en haut)
+
+5️⃣  Supprimez tout et collez ceci :
+
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /{document=**} {
+          allow read, write: if request.auth != null;
+        }
+      }
+    }
+
+6️⃣  Cliquez sur "Publier" (bouton bleu)
+
+7️⃣  Testez avec DEUX utilisateurs différents sur DEUX appareils
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧪 TEST DE CONNEXION (dans l'app) :
+
+1. Ouvrez une conversation
+2. Menu ⋮ (trois points en haut à droite)  
+3. "Test de connexion"
+4. Lisez le résultat
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION COMPLÈTE :
+
+📄 INDEX_DOCUMENTATION.md    ← Lisez en premier
+🚨 LIRE_MOI_URGENCE.md       ← Si ça ne marche pas
+📖 README_MESSAGERIE.md      ← Vue d'ensemble
+🔧 GUIDE_DEPANNAGE_MESSAGERIE.md ← Problèmes spécifiques
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 ASTUCE : 90% des problèmes viennent des règles Firestore !
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ FONCTIONNALITÉS DISPONIBLES :
+
+✅ Messages texte en temps réel
+✅ Envoi d'images  
+✅ Réactions emoji
+✅ Répondre aux messages (swipe)
+✅ Mode hors ligne
+✅ Indicateur "en train d'écrire..."
+✅ Statuts en ligne/hors ligne
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🆘 BESOIN D'AIDE ?
+
+1. Consultez LIRE_MOI_URGENCE.md
+2. Utilisez le test de connexion dans l'app
+3. Regardez les logs : adb logcat | grep ChatActivity
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bonne utilisation ! 🎉

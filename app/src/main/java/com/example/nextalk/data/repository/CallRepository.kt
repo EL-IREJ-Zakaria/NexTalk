@@ -160,13 +160,13 @@ class CallRepository(private val callDao: CallDao) {
             callsCollection.document(callId).update(
                 mapOf(
                     "isVideoAccepted" to true,
-                    "type" to "VIDEO"
+                    "type" to CallType.VIDEO.name // Utiliser l'enum CallType
                 )
             ).await()
 
             val call = callDao.getCallById(callId)
             if (call != null) {
-                callDao.updateCall(call.copy(isVideoAccepted = true))
+                callDao.updateCall(call.copy(isVideoAccepted = true, type = CallType.VIDEO))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error enabling video", e)
@@ -265,6 +265,8 @@ class CallRepository(private val callDao: CallDao) {
                 if (call.receiverId == userId && call.status == CallStatus.MISSED) {
                     val updatedCall = call.copy(status = CallStatus.DECLINED)
                     callDao.updateCall(updatedCall)
+                    // Mettre à jour dans Firestore pour la synchronisation
+                    callsCollection.document(call.id).update("status", CallStatus.DECLINED.name).await()
                 }
             }
             Log.d(TAG, "Marked ${missedCalls.size} missed calls as seen")
@@ -443,7 +445,7 @@ class CallRepository(private val callDao: CallDao) {
                 "receiverId" to receiverId,
                 "scheduleTime" to scheduleTime,
                 "type" to type.name,
-                "status" to "SCHEDULED",
+                "status" to CallStatus.SCHEDULED.name, // Utiliser l'enum CallStatus
                 "createdAt" to System.currentTimeMillis()
             )
 
@@ -609,7 +611,7 @@ class CallRepository(private val callDao: CallDao) {
             val totalCalls = calls.size
             val totalDuration = calls.sumOf { it.duration }
             val missedCalls = calls.count { it.status == CallStatus.MISSED }
-            val completedCalls = calls.count { it.status == CallStatus.COMPLETED }
+            val completedCalls = calls.count { it.status == CallStatus.ENDED }
             val declinedCalls = calls.count { it.status == CallStatus.DECLINED }
             val videoCalls = calls.count { it.type == CallType.VIDEO }
             val voiceCalls = calls.count { it.type == CallType.VOICE }

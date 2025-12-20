@@ -2,6 +2,7 @@ package com.example.nextalk.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.nextalk.data.model.Call
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CallDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCall(call: Call)
 
     @Update
