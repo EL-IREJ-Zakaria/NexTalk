@@ -430,10 +430,31 @@ class ChatRepository(
         duration: Long
     ): Result<Message> {
         return try {
-            // Upload du fichier audio
-            val voiceRef = storage.reference.child("voice_messages/${UUID.randomUUID()}.m4a")
-            voiceRef.putFile(voiceUri).await()
+            Log.d(TAG, "Uploading voice message...")
+            Log.d(TAG, "Voice URI: $voiceUri")
+            Log.d(TAG, "Duration: ${duration}ms")
+            
+            // Upload du fichier audio avec metadata
+            val fileName = "voice_messages/${UUID.randomUUID()}.3gp"
+            val voiceRef = storage.reference.child(fileName)
+            
+            // Ajouter les metadata pour le type de contenu (3GP/AMR)
+            val metadata = com.google.firebase.storage.StorageMetadata.Builder()
+                .setContentType("audio/3gpp")
+                .build()
+            
+            Log.d(TAG, "Starting upload to: $fileName")
+            
+            try {
+                voiceRef.putFile(voiceUri, metadata).await()
+                Log.d(TAG, "Upload completed, getting download URL...")
+            } catch (e: Exception) {
+                Log.e(TAG, "Upload failed: ${e.message}", e)
+                throw e
+            }
+            
             val voiceUrl = voiceRef.downloadUrl.await().toString()
+            Log.d(TAG, "Voice URL: $voiceUrl")
 
             // Créer le message vocal
             val messageId = UUID.randomUUID().toString()

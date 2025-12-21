@@ -1,19 +1,24 @@
 package com.example.nextalk.ui.chat
 
+import android.Manifest
 import android.animation.ObjectAnimator
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,10 +37,14 @@ import com.example.nextalk.databinding.ActivityChatBinding
 import com.example.nextalk.ui.call.CallActivity
 import com.example.nextalk.data.model.CallType
 import com.example.nextalk.data.repository.CallRepository
+import com.example.nextalk.util.AudioPlayer
 import com.example.nextalk.util.NetworkUtil
 import com.example.nextalk.util.FirebaseConnectionTester
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.math.abs
@@ -56,6 +65,7 @@ class ChatActivity : AppCompatActivity() {
         const val EXTRA_OTHER_USER_ID = "other_user_id"
         private const val TAG = "ChatActivity"
         private const val SWIPE_THRESHOLD = 100f
+        private const val PERMISSION_REQUEST_RECORD_AUDIO = 1001
     }
 
     private lateinit var binding: ActivityChatBinding
@@ -76,6 +86,11 @@ class ChatActivity : AppCompatActivity() {
     private var selectedImageUri: Uri? = null
     private var replyToMessage: Message? = null
     private var isTyping = false
+    
+    // Audio
+    private lateinit var audioPlayer: AudioPlayer
+    private var isRecording = false
+    private var recordingJob: Job? = null
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
@@ -120,6 +135,9 @@ class ChatActivity : AppCompatActivity() {
         chatRepository = ChatRepository(database.conversationDao(), database.messageDao())
         userRepository = UserRepository(database.userDao())
         callRepository = CallRepository(database.callDao())
+        
+        // Initialiser le lecteur audio
+        audioPlayer = AudioPlayer(this)
         
         // Charger les infos de l'utilisateur actuel
         loadCurrentUserInfo()
@@ -318,9 +336,24 @@ class ChatActivity : AppCompatActivity() {
             pickImage.launch("image/*")
         }
 
+        // Enregistrement vocal avec appui long
+        binding.btnVoice.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    startVoiceRecording()
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    stopVoiceRecording()
+                    true
+                }
+                else -> false
+            }
+        }
+        
+        // Click simple pour info
         binding.btnVoice.setOnClickListener {
-            // TODO: Implémenter l'enregistrement vocal
-            Toast.makeText(this, "Fonctionnalité vocale à venir", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Maintenez le bouton pour enregistrer", Toast.LENGTH_SHORT).show()
         }
 
         binding.btnEmoji.setOnClickListener {
@@ -492,8 +525,177 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun playVoiceMessage(message: Message) {
-        // TODO: Implémenter la lecture de message vocal
-        Toast.makeText(this, "Lecture vocale à venir", Toast.LENGTH_SHORT).show()
+        val audioUrl = message.voiceUrl
+        if (audioUrl.isEmpty()) {
+            Toast.makeText(this, "Audio non disponible", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // Si on joue déjà ce message, toggle pause/play
+        if (audioPlayer.isPlayingMessage(message.id)) {
+            audioPlayer.pause()
+        } else if (audioPlayer.playbackState.value is AudioPlayer.PlaybackState.Paused) {
+            audioPlayer.resume()
+        } else {
+            // Jouer le nouveau message
+            audioPlayer.play(message.id, audioUrl)
+        }
+    }
+    
+    private fun startVoiceRecording() {
+        // Vérifier la permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) 
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                PERMISSION_REQUEST_RECORD_AUDIO
+            )
+            return
+        }
+        
+        Log.d(TAG, "Starting voice recording...")
+        
+        val recordingFile = audioPlayer.startRecording()
+        
+        if (recordingFile == null) {
+            Log.e(TAG, "Failed to start recording")
+            Toast.makeText(this, "Erreur lors du démarrage de l'enregistrement", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        isRecording = true
+        
+        // Afficher l'indicateur d'enregistrement
+        binding.btnVoice.setColorFilter(ContextCompat.getColor(this, R.color.colorError))
+        Toast.makeText(this, "Enregistrement en cours...", Toast.LENGTH_SHORT).show()
+        
+        // Mettre à jour la durée périodiquement
+        recordingJob = lifecycleScope.launch {
+            while (isActive && isRecording) {
+                val duration = audioPlayer.getRecordingDuration()
+                Log.d(TAG, "Recording duration: ${duration}ms")
+                delay(500)
+            }
+        }
+    }
+    
+    private fun stopVoiceRecording() {
+        if (!isRecording) {
+            Log.d(TAG, "Not recording, nothing to stop")
+            return
+        }
+        
+        Log.d(TAG, "Stopping voice recording...")
+        
+        isRecording = false
+        recordingJob?.cancel()
+        binding.btnVoice.clearColorFilter()
+        
+        val result = audioPlayer.stopRecording()
+        
+        if (result != null) {
+            val (file, duration) = result
+            
+            Log.d(TAG, "Recording result - file: ${file?.absolutePath}, duration: ${duration}ms")
+            
+            if (file != null && file.exists() && duration > 500) { // Au moins 500ms
+                Log.d(TAG, "Sending voice message...")
+                sendVoiceMessage(file, duration)
+            } else if (duration <= 500) {
+                Toast.makeText(this, "Message trop court (min 0.5s)", Toast.LENGTH_SHORT).show()
+                file?.delete()
+            } else {
+                Log.e(TAG, "Recording file is null or doesn't exist")
+                Toast.makeText(this, "Erreur d'enregistrement", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Log.e(TAG, "stopRecording returned null")
+            Toast.makeText(this, "Erreur lors de l'arrêt de l'enregistrement", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun sendVoiceMessage(audioFile: java.io.File, duration: Long) {
+        val currentUserId = authRepository.getCurrentUserId() ?: return
+        
+        if (!NetworkUtil.isNetworkAvailable(this)) {
+            Toast.makeText(this, R.string.no_internet, Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        binding.progressBar.visibility = View.VISIBLE
+        
+        lifecycleScope.launch {
+            try {
+                // Convertir File en Uri avec FileProvider (nécessaire pour Android 7+)
+                val voiceUri = FileProvider.getUriForFile(
+                    this@ChatActivity,
+                    "${packageName}.fileprovider",
+                    audioFile
+                )
+                
+                Log.d(TAG, "Voice file: ${audioFile.absolutePath}")
+                Log.d(TAG, "Voice URI: $voiceUri")
+                Log.d(TAG, "File exists: ${audioFile.exists()}")
+                Log.d(TAG, "File size: ${audioFile.length()} bytes")
+                
+                val result = chatRepository.sendVoiceMessage(
+                    conversationId = conversationId,
+                    senderId = currentUserId,
+                    voiceUri = voiceUri,
+                    duration = duration
+                )
+                
+                binding.progressBar.visibility = View.GONE
+                
+                result.onSuccess { message ->
+                    Log.d(TAG, "Voice message sent successfully!")
+                    Log.d(TAG, "Message ID: ${message.id}")
+                    Log.d(TAG, "Voice URL: ${message.voiceUrl}")
+                    Toast.makeText(this@ChatActivity, "Message vocal envoyé", Toast.LENGTH_SHORT).show()
+                    
+                    // Supprimer le fichier local après envoi réussi
+                    audioFile.delete()
+                }
+                
+                result.onFailure { error ->
+                    Log.e(TAG, "Error sending voice message", error)
+                    Log.e(TAG, "Error message: ${error.message}")
+                    Log.e(TAG, "Error cause: ${error.cause}")
+                    
+                    val errorMsg = when {
+                        error.message?.contains("PERMISSION_DENIED") == true -> 
+                            "Permission refusée. Vérifiez les règles Storage."
+                        error.message?.contains("not found") == true -> 
+                            "Fichier non trouvé"
+                        error.message?.contains("network") == true -> 
+                            "Erreur réseau"
+                        else -> "Erreur lors de l'envoi"
+                    }
+                    Toast.makeText(this@ChatActivity, errorMsg, Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error sending voice message", e)
+                binding.progressBar.visibility = View.GONE
+                Toast.makeText(this@ChatActivity, R.string.error_occurred, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        
+        if (requestCode == PERMISSION_REQUEST_RECORD_AUDIO) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission accordée. Maintenez le bouton pour enregistrer.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Permission requise pour enregistrer", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun openImageViewer(imageUrl: String) {
@@ -784,5 +986,14 @@ class ChatActivity : AppCompatActivity() {
                 Log.e(TAG, "Error updating online status", e)
             }
         }
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        // Libérer les ressources audio
+        if (::audioPlayer.isInitialized) {
+            audioPlayer.release()
+        }
+        recordingJob?.cancel()
     }
 }

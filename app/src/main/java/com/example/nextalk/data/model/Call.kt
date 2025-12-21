@@ -55,7 +55,6 @@ data class Call(
 
     // Nouvelles propriétés pour les fonctionnalités avancées
     @get:PropertyName("isGroupCall")
-    @set:PropertyName("isGroupCall")
     val isGroupCall: Boolean = false,
     val groupParticipants: List<String> = emptyList(),
     val groupParticipantNames: List<String> = emptyList(),
@@ -69,17 +68,14 @@ data class Call(
     val ratedAt: Long = 0L,
 
     @get:PropertyName("isMuted")
-    @set:PropertyName("isMuted")
     val isMuted: Boolean = false,
     val mutedAt: Long = 0L,
 
     @get:PropertyName("isCameraOn")
-    @set:PropertyName("isCameraOn")
     val isCameraOn: Boolean = false,
     val cameraToggledAt: Long = 0L,
 
     @get:PropertyName("isSpeakerOn")
-    @set:PropertyName("isSpeakerOn")
     val isSpeakerOn: Boolean = false,
     val speakerToggledAt: Long = 0L,
 
