@@ -83,6 +83,8 @@
     <string name="play_voice_message">Lire le message vocal</string>
     <string name="pause_voice_message">Mettre en pause</string>
     <string name="swipe_to_reply">Glisser pour répondre</string>
+    <string name="slide_to_cancel">⬆️ Glisser pour annuler</string>
+    <string name="recording_canceled">Enregistrement annulé</string>
     <string name="long_press_options">Appuyez longuement pour plus d\'options</string>
     <string name="copy">Copier</string>
     <string name="edit">Modifier</string>

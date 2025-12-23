@@ -2,10 +2,15 @@ package com.example.nextalk.ui.chat
 
 import android.Manifest
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -91,6 +96,10 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var audioPlayer: AudioPlayer
     private var isRecording = false
     private var recordingJob: Job? = null
+    private var waveAnimationJob: Job? = null
+    private var recordingStartTime: Long = 0
+    private var initialTouchY: Float = 0f
+    private var isCanceled = false
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
@@ -336,15 +345,35 @@ class ChatActivity : AppCompatActivity() {
             pickImage.launch("image/*")
         }
 
-        // Enregistrement vocal avec appui long
-        binding.btnVoice.setOnTouchListener { _, event ->
+        // Enregistrement vocal avec appui long et glisser pour annuler
+        binding.btnVoice.setOnTouchListener { view, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    initialTouchY = event.rawY
+                    isCanceled = false
                     startVoiceRecording()
                     true
                 }
+                MotionEvent.ACTION_MOVE -> {
+                    if (isRecording) {
+                        val deltaY = initialTouchY - event.rawY
+                        
+                        // Si on glisse vers le haut de plus de 100px, annuler
+                        if (deltaY > 100) {
+                            cancelVoiceRecording()
+                        } else if (deltaY > 0) {
+                            // Effet visuel pendant le glissement
+                            val alpha = 1f - (deltaY / 100f) * 0.5f
+                            binding.recordingIndicatorCard.alpha = alpha
+                            binding.tvSlideToCancel.alpha = 0.8f + (deltaY / 100f) * 0.2f
+                        }
+                    }
+                    true
+                }
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    stopVoiceRecording()
+                    if (isRecording && !isCanceled) {
+                        stopVoiceRecording()
+                    }
                     true
                 }
                 else -> false
@@ -565,18 +594,193 @@ class ChatActivity : AppCompatActivity() {
         }
         
         isRecording = true
+        recordingStartTime = System.currentTimeMillis()
         
-        // Afficher l'indicateur d'enregistrement
-        binding.btnVoice.setColorFilter(ContextCompat.getColor(this, R.color.colorError))
-        Toast.makeText(this, "Enregistrement en cours...", Toast.LENGTH_SHORT).show()
+        // Feedback haptique
+        vibrateDevice(50)
+        
+        // Afficher l'indicateur d'enregistrement moderne avec animation
+        showRecordingIndicator()
+        
+        // Animer l'icône du bouton vocal
+        binding.btnVoice.animate()
+            .scaleX(0.9f)
+            .scaleY(0.9f)
+            .setDuration(200)
+            .start()
         
         // Mettre à jour la durée périodiquement
         recordingJob = lifecycleScope.launch {
             while (isActive && isRecording) {
                 val duration = audioPlayer.getRecordingDuration()
+                updateRecordingDuration(duration)
                 Log.d(TAG, "Recording duration: ${duration}ms")
-                delay(500)
+                delay(100)
             }
+        }
+    }
+    
+    private fun showRecordingIndicator() {
+        // Afficher l'indicateur avec animation d'entrée
+        binding.recordingIndicatorCard.visibility = View.VISIBLE
+        binding.recordingIndicatorCard.alpha = 0f
+        binding.recordingIndicatorCard.translationY = 100f
+        
+        binding.recordingIndicatorCard.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(300)
+            .start()
+        
+        // Afficher le texte "Glisser pour annuler"
+        binding.tvSlideToCancel.visibility = View.VISIBLE
+        binding.tvSlideToCancel.alpha = 0f
+        binding.tvSlideToCancel.animate()
+            .alpha(0.8f)
+            .setDuration(300)
+            .setStartDelay(150)
+            .start()
+        
+        // Animer l'icône micro (pulsation)
+        val pulseAnimation = ObjectAnimator.ofFloat(binding.ivRecordingIcon, "alpha", 1f, 0.3f, 1f)
+        pulseAnimation.duration = 1000
+        pulseAnimation.repeatCount = ObjectAnimator.INFINITE
+        pulseAnimation.start()
+        
+        // Animer les barres d'onde sonore
+        startWaveformAnimation()
+    }
+    
+    private fun startWaveformAnimation() {
+        val waveBars = listOf(
+            binding.waveBar1,
+            binding.waveBar2,
+            binding.waveBar3,
+            binding.waveBar4,
+            binding.waveBar5,
+            binding.waveBar6,
+            binding.waveBar7
+        )
+        
+        waveAnimationJob = lifecycleScope.launch {
+            val random = java.util.Random()
+            while (isActive && isRecording) {
+                waveBars.forEachIndexed { index, view ->
+                    val baseHeight = 12 + index * 2
+                    val randomHeight = baseHeight + random.nextInt(20)
+                    
+                    view.animate()
+                        .scaleY((randomHeight.toFloat() / baseHeight))
+                        .setDuration(150)
+                        .start()
+                }
+                delay(150)
+            }
+        }
+    }
+    
+    private fun updateRecordingDuration(durationMs: Long) {
+        val seconds = (durationMs / 1000) % 60
+        val minutes = (durationMs / 1000) / 60
+        binding.tvRecordingDuration.text = String.format("%d:%02d", minutes, seconds)
+    }
+    
+    private fun hideRecordingIndicator() {
+        // Masquer l'indicateur avec animation de sortie
+        binding.recordingIndicatorCard.animate()
+            .alpha(0f)
+            .translationY(100f)
+            .setDuration(300)
+            .withEndAction {
+                binding.recordingIndicatorCard.visibility = View.GONE
+                binding.tvRecordingDuration.text = "0:00"
+            }
+            .start()
+        
+        // Masquer le texte "Glisser pour annuler"
+        binding.tvSlideToCancel.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction {
+                binding.tvSlideToCancel.visibility = View.GONE
+            }
+            .start()
+        
+        // Réinitialiser l'animation du bouton vocal
+        binding.btnVoice.animate()
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(200)
+            .start()
+    }
+    
+    private fun cancelVoiceRecording() {
+        if (!isRecording || isCanceled) return
+        
+        Log.d(TAG, "Canceling voice recording...")
+        isCanceled = true
+        isRecording = false
+        
+        recordingJob?.cancel()
+        waveAnimationJob?.cancel()
+        
+        // Animation d'annulation
+        binding.recordingIndicatorCard.animate()
+            .alpha(0f)
+            .translationY(-100f)
+            .setDuration(200)
+            .withEndAction {
+                binding.recordingIndicatorCard.visibility = View.GONE
+                binding.recordingIndicatorCard.translationY = 100f
+                binding.tvRecordingDuration.text = "0:00"
+            }
+            .start()
+        
+        binding.tvSlideToCancel.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction {
+                binding.tvSlideToCancel.visibility = View.GONE
+            }
+            .start()
+        
+        binding.btnVoice.animate()
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(200)
+            .start()
+        
+        // Arrêter l'enregistrement et supprimer le fichier
+        val result = audioPlayer.stopRecording()
+        result?.first?.delete()
+        
+        // Feedback haptique pour l'annulation
+        vibrateDevice(100)
+        
+        Toast.makeText(this, R.string.recording_canceled, Toast.LENGTH_SHORT).show()
+    }
+    
+    /**
+     * Fait vibrer l'appareil pour un feedback haptique
+     */
+    private fun vibrateDevice(durationMs: Long) {
+        try {
+            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                vibratorManager.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            }
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(durationMs)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error vibrating device", e)
         }
     }
     
@@ -590,7 +794,10 @@ class ChatActivity : AppCompatActivity() {
         
         isRecording = false
         recordingJob?.cancel()
-        binding.btnVoice.clearColorFilter()
+        waveAnimationJob?.cancel()
+        
+        // Masquer l'indicateur d'enregistrement
+        hideRecordingIndicator()
         
         val result = audioPlayer.stopRecording()
         
@@ -601,6 +808,21 @@ class ChatActivity : AppCompatActivity() {
             
             if (file != null && file.exists() && duration > 500) { // Au moins 500ms
                 Log.d(TAG, "Sending voice message...")
+                
+                // Animation de succès
+                binding.btnVoice.animate()
+                    .scaleX(1.2f)
+                    .scaleY(1.2f)
+                    .setDuration(100)
+                    .withEndAction {
+                        binding.btnVoice.animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setDuration(100)
+                            .start()
+                    }
+                    .start()
+                
                 sendVoiceMessage(file, duration)
             } else if (duration <= 500) {
                 Toast.makeText(this, "Message trop court (min 0.5s)", Toast.LENGTH_SHORT).show()
@@ -995,5 +1217,6 @@ class ChatActivity : AppCompatActivity() {
             audioPlayer.release()
         }
         recordingJob?.cancel()
+        waveAnimationJob?.cancel()
     }
 }

@@ -238,6 +238,135 @@
         app:layout_constraintStart_toStartOf="@+id/rvMessages"
         app:layout_constraintTop_toTopOf="@+id/rvMessages" />
 
+    <!-- Indicateur d'enregistrement vocal moderne -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/recordingIndicatorCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/colorError"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/layoutInput"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <!-- Icône micro avec animation -->
+            <ImageView
+                android:id="@+id/ivRecordingIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_mic"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@android:color/white" />
+
+            <!-- Visualiseur d'onde sonore -->
+            <LinearLayout
+                android:id="@+id/waveformContainer"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/tvRecordingDuration"
+                app:layout_constraintStart_toEndOf="@+id/ivRecordingIcon"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <View
+                    android:id="@+id/waveBar1"
+                    android:layout_width="4dp"
+                    android:layout_height="12dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="@drawable/bg_wave_bar" />
+
+                <View
+                    android:id="@+id/waveBar2"
+                    android:layout_width="4dp"
+                    android:layout_height="20dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="@drawable/bg_wave_bar" />
+
+                <View
+                    android:id="@+id/waveBar3"
+                    android:layout_width="4dp"
+                    android:layout_height="16dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="@drawable/bg_wave_bar" />
+
+                <View
+                    android:id="@+id/waveBar4"
+                    android:layout_width="4dp"
+                    android:layout_height="24dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="@drawable/bg_wave_bar" />
+
+                <View
+                    android:id="@+id/waveBar5"
+                    android:layout_width="4dp"
+                    android:layout_height="18dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="@drawable/bg_wave_bar" />
+
+                <View
+                    android:id="@+id/waveBar6"
+                    android:layout_width="4dp"
+                    android:layout_height="22dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="@drawable/bg_wave_bar" />
+
+                <View
+                    android:id="@+id/waveBar7"
+                    android:layout_width="4dp"
+                    android:layout_height="14dp"
+                    android:layout_marginHorizontal="2dp"
+                    android:background="@drawable/bg_wave_bar" />
+            </LinearLayout>
+
+            <!-- Durée d'enregistrement -->
+            <TextView
+                android:id="@+id/tvRecordingDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:00"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Indicateur "Glisser pour annuler" -->
+    <TextView
+        android:id="@+id/tvSlideToCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:alpha="0.8"
+        android:text="@string/slide_to_cancel"
+        android:textColor="@color/textSecondary"
+        android:textSize="13sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/recordingIndicatorCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible" />
+
     <!-- Zone de saisie avec design moderne -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutInput"
